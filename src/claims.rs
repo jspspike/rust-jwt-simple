@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::convert::TryInto;
 
-use coarsetime::{Clock, Duration, UnixTimeStamp};
+use coarsetime::{Duration, UnixTimeStamp};
 use ct_codecs::{Base64UrlSafeNoPadding, Encoder};
 use rand::RngCore;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -173,7 +173,7 @@ pub struct JWTClaims<CustomClaims> {
 
 impl<CustomClaims> JWTClaims<CustomClaims> {
     pub(crate) fn validate(&self, options: &VerificationOptions) -> Result<(), Error> {
-        let now = Clock::now_since_epoch();
+        let now = Duration::new(worker::Date::now().as_millis() / 1000, 0);
         let time_tolerance = options.time_tolerance.unwrap_or_default();
 
         if let Some(reject_before) = options.reject_before {
@@ -304,7 +304,7 @@ impl Claims {
     /// Create a new set of claims, without custom data, expiring in
     /// `valid_for`.
     pub fn create(valid_for: Duration) -> JWTClaims<NoCustomClaims> {
-        let now = Some(Clock::now_since_epoch());
+        let now = Some(Duration::new(worker::Date::now().as_millis() / 1000, 0));
         JWTClaims {
             issued_at: now,
             expires_at: Some(now.unwrap() + valid_for),
@@ -323,7 +323,7 @@ impl Claims {
         custom_claims: CustomClaims,
         valid_for: Duration,
     ) -> JWTClaims<CustomClaims> {
-        let now = Some(Clock::now_since_epoch());
+        let now = Some(Duration::new(worker::Date::now().as_millis() / 1000, 0));
         JWTClaims {
             issued_at: now,
             expires_at: Some(now.unwrap() + valid_for),
